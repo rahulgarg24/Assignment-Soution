@@ -1,7 +1,7 @@
 function getEmailsToSheet() {
-
+    // Open the active Google Sheet
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-
+    // Clear the sheet before starting to avoid duplication
     sheet.clear();
     // Set headers
     sheet.appendRow(['Subject', 'Mail Body', 'Name', 'Designation', 'Email', 'Mobile No', 'Address']);
@@ -16,7 +16,6 @@ function getEmailsToSheet() {
     var designationPattern = /Designation:\s*(.*)/;
     var mobilePattern = /Mobile No:\s*(.*)/;
     var addressPattern = /Address:\s*(.*)/;
-    var bodyPattern = /Mail Body:\s*([\s\S]*?)\s*Sign:/;
 
     // Loop through each message in the threads
     for (var i = 0; i < messages.length; i++) {
@@ -32,7 +31,6 @@ function getEmailsToSheet() {
             var designation = (designationPattern.exec(body) || [])[1] || '';
             var mobile = (mobilePattern.exec(body) || [])[1] || '';
             var address = (addressPattern.exec(body) || [])[1] || '';
-            var mailBody = (bodyPattern.exec(body) || [])[1] || '';
 
             // Trim and replace multiple spaces with a single space
             email = email.trim();
@@ -40,7 +38,9 @@ function getEmailsToSheet() {
             designation = designation.trim();
             mobile = mobile.trim();
             address = address.trim();
-            mailBody = mailBody.trim().replace(/[\r\n]+/g, ' ');
+
+            // Clean and format the mail body
+            var mailBody = body.replace(/\r?\n|\r/g, ' ').trim();
 
             // Combine sender's email and extracted email address
             var combinedEmail = `${sender}${email ? ', ' + email : ''}`;
