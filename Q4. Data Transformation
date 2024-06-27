@@ -2,7 +2,7 @@ import pandas as pd
 
 # Load the Excel file
 input_file = 'Question 4.xlsx'
-output_file = 'book1.xlsx'
+output_file = 'Q4 solution.xlsx'
 
 # Read the data into a DataFrame
 df = pd.read_excel(input_file)
