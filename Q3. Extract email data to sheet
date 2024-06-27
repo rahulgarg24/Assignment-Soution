@@ -1,7 +1,7 @@
 function getEmailsToSheet() {
-    // Open the active Google Sheet
+
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    // Clear the sheet before starting to avoid duplication
+
     sheet.clear();
     // Set headers
     sheet.appendRow(['Subject', 'Mail Body', 'Name', 'Designation', 'Email', 'Mobile No', 'Address']);
