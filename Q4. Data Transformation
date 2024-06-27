@@ -1,0 +1,30 @@
+import pandas as pd
+
+# Load the Excel file
+input_file = 'Question 4.xlsx'
+output_file = 'book1.xlsx'
+
+# Read the data into a DataFrame
+df = pd.read_excel(input_file)
+
+# Identify the last column
+last_column = df.columns[-1]
+
+# Create a new DataFrame to store the transformed data
+new_rows = []
+
+# Iterate over each row and split the last column's values
+for index, row in df.iterrows():
+    split_values = str(row[last_column]).split(',')
+    for value in split_values:
+        new_row = row.copy()
+        new_row[last_column] = value.strip()  # Add the split value as a new row
+        new_rows.append(new_row)
+
+# Create a new DataFrame with the transformed data
+transformed_df = pd.DataFrame(new_rows)
+
+# Save the transformed DataFrame to a new Excel file
+transformed_df.to_excel(output_file, index=False)
+
+print("Data has been transformed and saved to the new Excel file.")
