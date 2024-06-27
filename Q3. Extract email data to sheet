@@ -1,63 +1,54 @@
-function extractEmailDataFromInbox() {
-  // Define search criteria and max number of threads
-  var searchQuery = 'in:inbox'; // Search query to filter emails
-  var maxThreads = 10;          // Adjust this number as needed
-  
-  // Get email threads based on the search query
-  var threads = GmailApp.search(searchQuery, 0, maxThreads);
-  
-  // Initialize data array with headers
-  var emailData = [["Subject", "Mail Body", "Name", "Designation", "Email", "Mobile No", "Address"]];
-  
-  // Loop through threads and extract data
-  for (var i = 0; i < threads.length; i++) {
-    var messages = threads[i].getMessages();
-    for (var j = 0; j < messages.length; j++) {
-      var message = messages[j];
-      
-      // Extract details from the message
-      var subject = message.getSubject();
-      var body = message.getPlainBody();
-      var sender = message.getFrom();
-      
-      // Regex to extract name and email from the sender string
-      var nameMatch = sender.match(/"(.*?)"/);
-      var emailMatch = sender.match(/<(.*?)>/);
-      var name = nameMatch ? nameMatch[1] : sender;
-      var email = emailMatch ? emailMatch[1] : sender;
-      
-      // Dummy data for designation, mobile no, and address (replace with actual parsing if needed)
-      var designation = "N/A";  // Placeholder as actual designation is not typically in the email
-      var mobileNo = "N/A";     // Placeholder as mobile no is not typically in the email
-      var address = "N/A";      // Placeholder as address is not typically in the email
-      
-      // Append the data to the array
-      emailData.push([subject, body, name, designation, email, mobileNo, address]);
-    }
-  }
-  
-  // Open the active spreadsheet
-  var sheet = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // Create a new sheet named 'Email Data' if it doesn't exist
-  var emailSheet = sheet.getSheetByName('Email Data');
-  if (!emailSheet) {
-    emailSheet = sheet.insertSheet('Email Data');
-  } else {
-    // Clear existing content if sheet already exists
-    emailSheet.clear();
-  }
-  
-  // Set the email data in the sheet
-  emailSheet.getRange(1, 1, emailData.length, emailData[0].length).setValues(emailData);
-  
-  // Auto-resize columns to fit content
-  emailSheet.autoResizeColumns(1, emailData[0].length);
-}
+function getEmailsToSheet() {
+    // Open the active Google Sheet
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    // Clear the sheet before starting to avoid duplication
+    sheet.clear();
+    // Set headers
+    sheet.appendRow(['Subject', 'Mail Body', 'Name', 'Designation', 'Email', 'Mobile No', 'Address']);
+    
+    // Search for specific emails
+    var threads = GmailApp.search('from:raghavkumar0123456789@gmail.com subject:"Exciting Opportunity"');
+    var messages = GmailApp.getMessagesForThreads(threads);
+    
+    // Regular expressions to extract the details from the email body
+    var emailPattern = /Email Address:\s*(.*)/;
+    var namePattern = /Name:\s*(.*)/;
+    var designationPattern = /Designation:\s*(.*)/;
+    var mobilePattern = /Mobile No:\s*(.*)/;
+    var addressPattern = /Address:\s*(.*)/;
+    var bodyPattern = /Mail Body:\s*([\s\S]*?)\s*Sign:/;
 
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Custom Scripts')
-      .addItem('Extract Email Data', 'extractEmailDataFromInbox')
-      .addToUi();
+    // Loop through each message in the threads
+    for (var i = 0; i < messages.length; i++) {
+        for (var j = 0; j < messages[i].length; j++) {
+            var message = messages[i][j];
+            var sender = message.getFrom();
+            var subject = message.getSubject();
+            var body = message.getPlainBody();
+            
+            // Extract data using regular expressions
+            var email = (emailPattern.exec(body) || [])[1] || '';
+            var name = (namePattern.exec(body) || [])[1] || '';
+            var designation = (designationPattern.exec(body) || [])[1] || '';
+            var mobile = (mobilePattern.exec(body) || [])[1] || '';
+            var address = (addressPattern.exec(body) || [])[1] || '';
+            var mailBody = (bodyPattern.exec(body) || [])[1] || '';
+
+            // Trim and replace multiple spaces with a single space
+            email = email.trim();
+            name = name.trim();
+            designation = designation.trim();
+            mobile = mobile.trim();
+            address = address.trim();
+            mailBody = mailBody.trim().replace(/[\r\n]+/g, ' ');
+
+            // Combine sender's email and extracted email address
+            var combinedEmail = `${sender}${email ? ', ' + email : ''}`;
+
+            // Append the extracted data to the sheet
+            sheet.appendRow([subject, mailBody, name, designation, combinedEmail, mobile, address]);
+        }
+    }
+    
+    Logger.log('Data extraction complete. Check your Google Sheet.');
 }
