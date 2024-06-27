@@ -1,0 +1,63 @@
+function extractEmailDataFromInbox() {
+  // Define search criteria and max number of threads
+  var searchQuery = 'in:inbox'; // Search query to filter emails
+  var maxThreads = 10;          // Adjust this number as needed
+  
+  // Get email threads based on the search query
+  var threads = GmailApp.search(searchQuery, 0, maxThreads);
+  
+  // Initialize data array with headers
+  var emailData = [["Subject", "Mail Body", "Name", "Designation", "Email", "Mobile No", "Address"]];
+  
+  // Loop through threads and extract data
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+    for (var j = 0; j < messages.length; j++) {
+      var message = messages[j];
+      
+      // Extract details from the message
+      var subject = message.getSubject();
+      var body = message.getPlainBody();
+      var sender = message.getFrom();
+      
+      // Regex to extract name and email from the sender string
+      var nameMatch = sender.match(/"(.*?)"/);
+      var emailMatch = sender.match(/<(.*?)>/);
+      var name = nameMatch ? nameMatch[1] : sender;
+      var email = emailMatch ? emailMatch[1] : sender;
+      
+      // Dummy data for designation, mobile no, and address (replace with actual parsing if needed)
+      var designation = "N/A";  // Placeholder as actual designation is not typically in the email
+      var mobileNo = "N/A";     // Placeholder as mobile no is not typically in the email
+      var address = "N/A";      // Placeholder as address is not typically in the email
+      
+      // Append the data to the array
+      emailData.push([subject, body, name, designation, email, mobileNo, address]);
+    }
+  }
+  
+  // Open the active spreadsheet
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Create a new sheet named 'Email Data' if it doesn't exist
+  var emailSheet = sheet.getSheetByName('Email Data');
+  if (!emailSheet) {
+    emailSheet = sheet.insertSheet('Email Data');
+  } else {
+    // Clear existing content if sheet already exists
+    emailSheet.clear();
+  }
+  
+  // Set the email data in the sheet
+  emailSheet.getRange(1, 1, emailData.length, emailData[0].length).setValues(emailData);
+  
+  // Auto-resize columns to fit content
+  emailSheet.autoResizeColumns(1, emailData[0].length);
+}
+
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Custom Scripts')
+      .addItem('Extract Email Data', 'extractEmailDataFromInbox')
+      .addToUi();
+}
