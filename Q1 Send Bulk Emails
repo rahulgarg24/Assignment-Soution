@@ -2,7 +2,7 @@ function sendBulkEmails() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var startRow = 2; // First row of data to process
   var numRows = sheet.getLastRow() - 1; // Number of rows to process
-  var dataRange = sheet.getRange(startRow, 1, numRows, 3); // Fetch the range of cells containing the data
+  var dataRange = sheet.getRange(startRow, 1, numRows, 4); // Fetch the range of cells containing the data
   var data = dataRange.getValues(); // Fetch values for each row in the range
 
   for (var i = 0; i < data.length; ++i) {
@@ -10,8 +10,8 @@ function sendBulkEmails() {
     var emailAddress = row[0]; // First column
     var subject = row[1]; // Second column
     var message = row[2]; // Third column
-
+    var signature = row[3];
     // Send email
-    MailApp.sendEmail(emailAddress, subject, message);
+    MailApp.sendEmail(emailAddress, subject, message + "\n\n" + signature);
   }
 }
